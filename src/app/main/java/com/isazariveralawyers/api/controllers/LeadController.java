@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/leads")
+@CrossOrigin(origins = {"localhost", "https://react-isaza-rivera-lawyers.vercel.app"})
 public class LeadController {
     private final LeadService service;
     public LeadController(LeadService service) { this.service = service; }
@@ -17,20 +18,12 @@ public class LeadController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public LeadResponse create(@Valid @RequestBody LeadCreateRequest req) {
-        return service.createLead(req);
+    public void create(@Valid @RequestBody LeadCreateRequest req) {
+        return service.create(req);
     }
-
-
-    @GetMapping("/{id}")
-    public LeadResponse get(@PathVariable Long id) {
-        return service.getLead(id);
-    }
-
 
     @PostMapping("/{id}/confirm")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void confirm(@PathVariable Long id) {
-        service.markConfirmed(id);
+    public boolean confirm(@PathVariable Long id) {
+        return service.confirm(id);
     }
 }
