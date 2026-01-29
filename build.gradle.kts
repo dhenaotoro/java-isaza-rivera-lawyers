@@ -20,6 +20,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("mysql:mysql-connector-java:8.0.33")
+    implementation("org.flywaydb:flyway-core")
 
 
     // Jackson (incluido por web), Lombok opcional

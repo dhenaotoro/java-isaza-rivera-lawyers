@@ -1,67 +1,134 @@
 # java-isaza-rivera-lawyers
-# Endpoints (resumen)
 
+## Resumen de endpoints
 
-- `POST /api/v1/leads` → crea un lead con: nombres, fecha de nacimiento, correo, teléfono, tipo de solicitud, consentimiento WA.
-- `GET /api/v1/leads/{id}` → consulta el lead.
-- `POST /api/v1/leads/{id}/confirm` → marca confirmación de cita (p. ej. tras coordinar por WhatsApp/Calendly).
-- `POST /api/v1/payments/checkout` → genera link de pago (PSE/Nequi/Daviplata vía pasarela).
-- `POST /webhooks/payments/{provider}` → recepción de webhooks de la pasarela.
-
+- `POST /api/v1/leads` → crea un lead.
+- `GET /api/v1/leads/{id}` → obtiene un lead.
+- `POST /api/v1/leads/{id}/confirm` → confirma cita/estado del lead.
+- `POST /api/v1/payments/checkout` → genera link de pago (stub en esta plantilla).
+- `POST /webhooks/payments/{provider}` → recibe webhooks de pasarelas.
 
 ---
 
+## Ejecutar con Podman Compose (recomendado)
 
-# Ejemplos curl
+Prerequisitos: `podman`, `podman-compose` y que la `podman machine` esté iniciada.
 
+1. Iniciar la máquina de Podman (si no está creada):
 
 ```bash
-# Crear lead
-curl -X POST http://localhost:8080/api/v1/leads \
--H 'Content-Type: application/json' \
--d '{
-"firstName":"Ana","lastName":"Perez",
-"birthDate":"1995-04-10",
-"email":"ana@example.com",
-"phone":"3001234567",
-"requestType":"DIVORCIO",
-"whatsappConsent": true
-}'
+podman machine init
+podman machine start
+```
 
+2. Desde la raíz del proyecto construir y levantar los servicios:
 
-# Crear link de pago por $50.000 COP
-curl -X POST http://localhost:8080/api/v1/payments/checkout \
--H 'Content-Type: application/json' \
--d '{"leadId":1, "amountInCents":5000000, "description":"Asesoría inicial"}'
+```bash
+podman-compose build --no-cache api
+podman-compose up -d
+```
+
+3. Ver logs:
+
+```bash
+podman-compose logs -f api
+podman-compose logs -f mysql
+```
+
+4. Parar y eliminar:
+
+```bash
+podman-compose down -v
+```
+
+La API escucha en `http://localhost:8081` (puerto mapeado por `podman-compose.yml`).
+
+---
+
+## Ejecutar localmente con Gradle (alternativa rápida)
+
+Si prefieres ejecutar sin contenedores:
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=docker'
+```
+
+Nota: la profile `docker` carga `src/app/main/resources/application-docker.yml` que usa MySQL. Para ejecución sin MySQL, borra/ajusta la URL en `application.yml`.
+
+---
+
+## Probar con Postman / curl
+
+Endpoint para crear un lead:
+
+```
+POST http://localhost:8081/api/v1/leads
+Content-Type: application/json
+```
+
+Ejemplo de cuerpo JSON (use `RequestType` como DIVORCED | CHILD_SUPPORT | CUSTODY | DOMESTIC_VIOLENCE | OTHER):
+
+```json
+{
+	"firstName": "Ana",
+	"lastName": "Perez",
+	"city": "Bogota",
+	"email": "ana@example.com",
+	"phone": "3001234567",
+	"summary": "Necesito asesoría sobre divorcio",
+	"requestType": "DIVORCED",
+	"hasMinors": false,
+	"dataProcessingConsent": true,
+	"whatsappConsent": true,
+	"source": "instagram"
+}
+```
+
+curl equivalente:
+
+```bash
+curl -X POST http://localhost:8081/api/v1/leads \
+	-H 'Content-Type: application/json' \
+	-d '{"firstName":"Ana","lastName":"Perez","city":"Bogota","email":"ana@example.com","phone":"3001234567","summary":"Necesito asesoría","requestType":"DIVORCED","whatsappConsent":true}'
+```
+
+Para confirmar un lead (ejemplo id 1):
+
+```bash
+curl -X POST http://localhost:8081/api/v1/leads/1/confirm
 ```
 
 ---
 
+## Verificar la base de datos (MySQL)
 
-# Notas de arquitectura y negocio
+Si `podman-compose` mapea el puerto 3306, con un cliente MySQL:
 
-1) **Cuándo cobrar** (recomendación práctica):
-- **Opción A (mi sugerida): anticipo/abono antes de la cita**: Genera link de pago al crear/confirmar el lead (mínimo $30k–$60k COP). Filtra no-shows y compromete al cliente. Si no asiste, se puede reprogramar o convertir a saldo a favor.
-- **Opción B: pago contra-confirmación por WhatsApp**: tras coordinar fecha/hora, envías link de pago por WhatsApp/Email. Riesgo: algunos no pagan a tiempo.
-- **Opción C: pago posterior**: mayor tasa de no pago/no-show. Menos recomendable.
+```bash
+mysql -h 127.0.0.1 -P 3306 -u legal_user -p
+# contraseña: legal_password
+USE legaldb;
+SHOW TABLES;
+DESCRIBE `lead`;
+SELECT * FROM `lead` LIMIT 10;
+```
 
+---
 
-2) **Pasarela en Colombia**: en vez de integrar PSE/Nequi/Daviplata directo, usa un **agregador** (p. ej., Wompi, ePayco, PlacetoPay) que te da links de cobro, soporta varios métodos, conciliación y **webhooks**. Cambias `StubPaymentService` por un `WompiPaymentService` y ya.
+## Migraciones
 
+Flyway está incluido; las migraciones están en `src/app/main/resources/db/migration`. Al arrancar la app se aplican automáticamente.
 
-3) **WhatsApp Business**: usa la **Cloud API** (Meta). Flujo típico: plantilla de mensaje de confirmación + botón al link de pago/calendario. Implementa `WhatsappService` con HTTP (Bearer Token) y maneja rate limits.
+---
 
+## Notas rápidas
 
-4) **Privacidad**: almacena lo mínimo (cumple **Habeas Data** en CO). Guarda consentimiento para contacto por WA/Email. Añade políticas y endpoint para eliminación de datos si lo piden.
+- Si `podman-compose` no está disponible, instale `pipx` y luego `pipx install podman-compose`, o use Homebrew: `brew install podman`.
+- Si ves `zsh: command not found: pipx`, añade `export PATH="$HOME/.local/bin:$PATH"` a `~/.zshrc` y reinicia el shell.
+- Si la API no arranca, verifica `podman-compose logs api` para errores (Flyway, conexión MySQL, variables de entorno).
 
+Si quieres, puedo:
+- levantar los contenedores y comprobar los logs, o
+- ejecutar un ejemplo `curl` para crear un lead desde aquí.
 
-5) **Escalabilidad sencilla**: H2 para dev; luego Postgres/MySQL. Añade colas (SNS/SQS) para envío de mensajes y procesamiento de webhooks si crece el tráfico.
-
-
-6) **Seguridad**: en producción agrega **Spring Security** con API keys o JWT, CORS restringido, validación de firmas de webhooks y **rate limiting**.
-
-
-7) **Agenda**: puedes integrar Calendly/Google Calendar y disparar el link de pago al agendar.
-
-
-> Con esto tienes un esqueleto listo para levantar, probar y extender a producción.
+Gracias — dime qué prefieres que haga ahora.
