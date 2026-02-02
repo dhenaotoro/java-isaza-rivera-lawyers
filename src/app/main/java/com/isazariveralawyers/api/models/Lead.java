@@ -10,6 +10,7 @@ import lombok.Setter;
 
 
 @Entity
+@Table(name = "`lead`")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,7 +1,7 @@
 package com.isazariveralawyers.api.controllers;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadResponse;
+import com.isazariveralawyers.api.dtos.LeadCreateResponse;
 import com.isazariveralawyers.api.services.LeadService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ public class LeadController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody LeadCreateRequest req) {
+    public LeadCreateResponse create(@Valid @RequestBody LeadCreateRequest req) {
         return service.create(req);
     }
 

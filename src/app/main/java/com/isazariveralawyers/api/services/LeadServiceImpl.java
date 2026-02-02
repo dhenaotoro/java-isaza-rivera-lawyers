@@ -2,13 +2,14 @@ package com.isazariveralawyers.api.services;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
 import com.isazariveralawyers.api.dtos.LeadCreateResponse;
-import com.isazariveralawyers.api.entities.Lead;
-import com.isazariveralawyers.api.entities.LeadStatus;
+import com.isazariveralawyers.api.dtos.Schedule;
+import com.isazariveralawyers.api.models.Lead;
+import com.isazariveralawyers.api.models.LeadStatus;
 import com.isazariveralawyers.api.repositories.LeadRepository;
 import com.isazariveralawyers.api.utils.PhoneUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.Optional;
 @Service
 public class LeadServiceImpl implements LeadService {
     private final LeadRepository repo;
@@ -31,13 +32,13 @@ public class LeadServiceImpl implements LeadService {
         lead.setSummary(req.getSummary());
         lead.setSource(req.getSource());
         lead.setRequestType(req.getRequestType());
-        lead.setHasMinors(Boolean.TRUE.equals(req.getHasMinors()));
-        lead.setDataProcessingConsent(Boolean.TRUE.equals(req.getDataProcessingConsent()));
-        lead.setWhatsappConsent(Boolean.TRUE.equals(req.getWhatsappConsent()));
+        lead.setHasMinors(req.isHasMinors());
+        lead.setDataProcessingConsent(req.isDataProcessingConsent());
+        lead.setWhatsappConsent(req.isWhatsappConsent());
         lead = repo.save(lead);
 
 
-        if (Boolean.TRUE.equals(lead.getWhatsappConsent())) {
+        if (Boolean.TRUE.equals(lead.isWhatsappConsent())) {
             // Notify via WhatsApp
             /* whatsappService.sendConfirmationMessage(
                 lead.getPhoneE164(),
@@ -56,10 +57,10 @@ public class LeadServiceImpl implements LeadService {
         if (lead.getStatus() != LeadStatus.NEW) {
             return false; 
         }
-        lead.setStatus(LeadStatus.CONFIRMED);
+        lead.setStatus(LeadStatus.CONFIRMED_APPOINTMENT);
         repo.save(lead);
 
-        if (Boolean.TRUE.equals(lead.getWhatsappConsent())) {
+        if (Boolean.TRUE.equals(lead.isWhatsappConsent())) {
             // Notify via WhatsApp
             /* whatsappService.sendConfirmationMessage(
                 lead.getPhoneE164(),
@@ -69,7 +70,7 @@ public class LeadServiceImpl implements LeadService {
         return true;
     }
 
-    private LeadResponse map(Lead l) {
+    private LeadCreateResponse map(Lead l) {
         var dto = new LeadCreateResponse();
         dto.setId(l.getId());
         dto.setStatus(l.getStatus());
@@ -77,7 +78,7 @@ public class LeadServiceImpl implements LeadService {
         var schedule = new Schedule();
         schedule.setLawyerAUrl(String.format("https://calendly.com/lawyer-a/consulting/leadId=%d", l.getId()));
         schedule.setLawyerBUrl(String.format("https://calendly.com/lawyer-b/consulting/leadId=%d", l.getId()));
-        dto.setSchedule();
+        dto.setSchedule(schedule);
         return dto;
     }
 }

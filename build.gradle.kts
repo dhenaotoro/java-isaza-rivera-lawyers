@@ -14,6 +14,18 @@ repositories {
     mavenCentral()
 }
 
+// Project sources are under `src/app/main/...` in this workspace
+sourceSets {
+    named("main") {
+        java {
+            setSrcDirs(listOf("src/app/main/java"))
+        }
+        resources {
+            setSrcDirs(listOf("src/app/main/resources"))
+        }
+    }
+}
+
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -21,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java:8.0.33")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-mysql:10.20.1")
 
 
     // Jackson (incluido por web), Lombok opcional
@@ -35,4 +47,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Ensure Spring Boot JAR has the main class configured
+tasks.named("bootJar") {
+    this as org.springframework.boot.gradle.tasks.bundling.BootJar
+    mainClass.set("com.isazariveralawyers.api.LegacyAdviceApiApplication")
 }

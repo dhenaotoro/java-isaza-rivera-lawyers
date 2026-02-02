@@ -8,13 +8,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-class Schedule {
-    private String lawyerAUrl;
-    private String lawyerBUrl;
-}
-
-@Getter
-@Setter
 public class LeadCreateResponse {
     private Long id;
     private LeadStatus status;

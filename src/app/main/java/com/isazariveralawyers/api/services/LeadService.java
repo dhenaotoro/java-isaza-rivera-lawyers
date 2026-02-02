@@ -1,9 +1,9 @@
 package com.isazariveralawyers.api.services;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadResponse;
+import com.isazariveralawyers.api.dtos.LeadCreateResponse;
 
 public interface LeadService {
-    LeadResponse createLead(LeadCreateRequest req);
+    LeadCreateResponse create(LeadCreateRequest req);
     boolean confirm(Long id);
 }
