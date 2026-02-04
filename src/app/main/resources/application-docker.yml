@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    properties:
+      hibernate.format_sql: true
+      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+  
+app:
+  whatsapp:
+    senderNumber: "+57xxxxxxxxxx"
+    token: "WHATSAPP_BEARER_TOKEN"
+  payments:
+    provider: "stub"
+    callbackBaseUrl: "https://tu-dominio.com/webhooks"
+
+server:
+  port: 8081

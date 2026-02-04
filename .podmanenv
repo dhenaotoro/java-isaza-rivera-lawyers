@@ -1,0 +1,8 @@
+# MySQL Connector/J dependency versions compatibility
+# For Java 21, use mysql-connector-java 8.0.33+
+
+# Build: podman-compose build
+# Run: podman-compose up -d
+# Logs: podman-compose logs -f
+# Stop: podman-compose down
+# Clean: podman-compose down -v
