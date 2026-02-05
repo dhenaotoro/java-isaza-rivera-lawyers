@@ -3,10 +3,7 @@
 ## Resumen de endpoints
 
 - `POST /api/v1/leads` → crea un lead.
-- `GET /api/v1/leads/{id}` → obtiene un lead.
 - `POST /api/v1/leads/{id}/confirm` → confirma cita/estado del lead.
-- `POST /api/v1/payments/checkout` → genera link de pago (stub en esta plantilla).
-- `POST /webhooks/payments/{provider}` → recibe webhooks de pasarelas.
 
 ---
 
@@ -126,9 +123,3 @@ Flyway está incluido; las migraciones están en `src/app/main/resources/db/migr
 - Si `podman-compose` no está disponible, instale `pipx` y luego `pipx install podman-compose`, o use Homebrew: `brew install podman`.
 - Si ves `zsh: command not found: pipx`, añade `export PATH="$HOME/.local/bin:$PATH"` a `~/.zshrc` y reinicia el shell.
 - Si la API no arranca, verifica `podman-compose logs api` para errores (Flyway, conexión MySQL, variables de entorno).
-
-Si quieres, puedo:
-- levantar los contenedores y comprobar los logs, o
-- ejecutar un ejemplo `curl` para crear un lead desde aquí.
-
-Gracias — dime qué prefieres que haga ahora.

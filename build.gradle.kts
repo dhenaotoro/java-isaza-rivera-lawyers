@@ -1,11 +1,11 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.4.0" // ← ajusta a la última estable
-    id("io.spring.dependency-management") version "1.1.6"
+    id("org.springframework.boot") version "3.4.0" // ← Ajusta a la última estable
+    id("io.spring.dependency-management") version "1.1.6" // ← Se encarga de administrar dependencias de Spring Boot automaticamente, no el desarrollador
 }
 
 
-group = "co.danielhenao"
+group = "co.isazariveralawyers"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -14,7 +14,7 @@ repositories {
     mavenCentral()
 }
 
-// Project sources are under `src/app/main/...` in this workspace
+// Fuentes del proyecto estan bajo la ruta `src/app/main/...` en este espacio de trabajo
 sourceSets {
     named("main") {
         java {
@@ -49,7 +49,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// Ensure Spring Boot JAR has the main class configured
+// Garantiza que Spring Boot JAR tenga la clase principal configurada
 tasks.named("bootJar") {
     this as org.springframework.boot.gradle.tasks.bundling.BootJar
     mainClass.set("com.isazariveralawyers.api.LegacyAdviceApiApplication")

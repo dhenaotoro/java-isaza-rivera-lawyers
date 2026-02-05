@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:legaldb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: sa
+jpa:
+  hibernate:
+    ddl-auto: update
+  properties:
+    hibernate.format_sql: true
+h2:
+  console:
+    enabled: true
+    path: /h2
+app:
+  whatsapp:
+    senderNumber: "+57xxxxxxxxxx" # número de WhatsApp Business
+    token: "WHATSAPP_BEARER_TOKEN"
+  payments:
+    provider: "stub" # luego: wompi | epayco | placetopay (sugeridos en CO)
+    callbackBaseUrl: "https://tu-dominio.com/webhooks"

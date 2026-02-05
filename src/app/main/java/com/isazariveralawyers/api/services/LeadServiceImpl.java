@@ -39,7 +39,7 @@ public class LeadServiceImpl implements LeadService {
 
 
         if (Boolean.TRUE.equals(lead.isWhatsappConsent())) {
-            // Notify via WhatsApp
+            // Notificar por WhatsApp
             /* whatsappService.sendConfirmationMessage(
                 lead.getPhoneE164(),
                 "Hola "+lead.getFirstName()+", recibimos tu solicitud. Pronto una asesora te contactará."
@@ -61,7 +61,7 @@ public class LeadServiceImpl implements LeadService {
         repo.save(lead);
 
         if (Boolean.TRUE.equals(lead.isWhatsappConsent())) {
-            // Notify via WhatsApp
+            // Notificar por WhatsApp
             /* whatsappService.sendConfirmationMessage(
                 lead.getPhoneE164(),
                 "Hola "+lead.getFirstName()+", recibimos tu solicitud. Pronto una asesora te contactará."

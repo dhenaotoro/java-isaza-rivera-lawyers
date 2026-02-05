@@ -16,7 +16,7 @@ public class LeadCreateRequest {
     @Email @NotBlank
     private String email;
     @NotBlank
-    private String phone; // can be in a colombian format; it gets normalized to E.164
+    private String phone; // puede estar en formato colombiano; se normaliza a E.164
     @NotBlank
     private String summary;
     @NotNull
