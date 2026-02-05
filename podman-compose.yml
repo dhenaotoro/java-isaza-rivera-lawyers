@@ -31,7 +31,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/legaldb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: legal_user
       SPRING_DATASOURCE_PASSWORD: legal_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
       mysql:

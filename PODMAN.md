@@ -1,101 +1,102 @@
-# Podman Compose Setup - Isaza Rivera Lawyers API
+<!-- Configuración de Podman Compose - API Isaza Rivera Abogados -->
+# Configuración de Podman Compose - API Isaza Rivera Abogados
 
-## Quick Start
+## Inicio Rápido
 
-### Prerequisites
-- Podman installed on your system
-- Podman Compose plugin installed
+### Requisitos Previos
+- Podman instalado en tu sistema
+- Plugin de Podman Compose instalado
 
-### Build and Start Services
+### Construir e Iniciar Servicios
 
 ```bash
-# Start the containers
+# Inicia los contenedores
 podman-compose -f podman-compose.yml up -d
 
-# View logs
+# Ver registros
 podman-compose -f podman-compose.yml logs -f
 
-# Stop the containers
+# Detener los contenedores
 podman-compose -f podman-compose.yml down
 
-# Stop and remove volumes (cleanup)
+# Detener y eliminar volúmenes (limpiar)
 podman-compose -f podman-compose.yml down -v
 ```
 
-## Services
+## Servicios
 
-### MySQL Database
-- **Container Name**: isaza-mysql
-- **Port**: 3306 (localhost:3306)
-- **Database**: legaldb
-- **Username**: legal_user
-- **Password**: legal_password
-- **Root Password**: root_password
+### Base de Datos MySQL
+- **Nombre del Contenedor**: isaza-mysql
+- **Puerto**: 3306 (localhost:3306)
+- **Base de Datos**: legaldb
+- **Usuario**: legal_user
+- **Contraseña**: legal_password
+- **Contraseña de Root**: root_password
 
-### Java API
-- **Container Name**: isaza-api
-- **Port**: 8081 (http://localhost:8081)
-- **Spring Profile**: docker
+### API Java
+- **Nombre del Contenedor**: isaza-api
+- **Puerto**: 8081 (http://localhost:8081)
+- **Perfil de Spring**: docker
 
-## Accessing Services
+## Acceso a los Servicios
 
 ### API
 ```
 http://localhost:8081
-http://localhost:8081/h2 (H2 Console - if enabled)
+http://localhost:8081/h2 (Consola H2 - si está habilitada)
 ```
 
-### MySQL Database
+### Base de Datos MySQL
 ```bash
-# Connect to MySQL from host
+# Conectarse a MySQL desde tu máquina
 mysql -h localhost -u legal_user -p legaldb
-# Password: legal_password
+# Contraseña: legal_password
 
-# Or connect from within the container
+# O conectarse desde dentro del contenedor
 podman-compose exec mysql mysql -u legal_user -p legaldb
 ```
 
-## Configuration
+## Configuración
 
-The application uses environment variables defined in `podman-compose.yml`:
-- `SPRING_DATASOURCE_URL`: MySQL connection string
-- `SPRING_DATASOURCE_USERNAME`: Database user
-- `SPRING_DATASOURCE_PASSWORD`: Database password
-- `SPRING_PROFILES_ACTIVE`: Active Spring profile (docker)
+La aplicación utiliza variables de entorno definidas en `podman-compose.yml`:
+- `SPRING_DATASOURCE_URL`: Cadena de conexión a MySQL
+- `SPRING_DATASOURCE_USERNAME`: Usuario de la base de datos
+- `SPRING_DATASOURCE_PASSWORD`: Contraseña de la base de datos
+- `SPRING_PROFILES_ACTIVE`: Perfil activo de Spring (docker)
 
-Configuration file: `src/app/main/resources/application-docker.yml`
+Archivo de configuración: `src/app/main/resources/application-docker.yml`
 
-## Network
+## Red
 
-Both services communicate through the `legal-network` bridge network.
+Ambos servicios se comunican a través de la red puente `legal-network`.
 
-## Data Persistence
+## Persistencia de Datos
 
-MySQL data is stored in the `mysql_data` named volume, persisting between container restarts.
+Los datos de MySQL se almacenan en el volumen nombrado `mysql_data`, persistiendo entre reinicios de contenedores.
 
-## Health Checks
+## Verificaciones de Salud
 
-The MySQL service includes health checks that verify connectivity before the API starts.
+El servicio MySQL incluye verificaciones de salud que confirman la conectividad antes de iniciar la API.
 
-## Troubleshooting
+## Solución de Problemas
 
-### Check service status
+### Verificar estado del servicio
 ```bash
 podman-compose ps
 ```
 
-### View service logs
+### Ver registros del servicio
 ```bash
 podman-compose logs mysql
 podman-compose logs api
 ```
 
-### Rebuild the image
+### Reconstruir la imagen
 ```bash
 podman-compose build --no-cache
 ```
 
-### Clean up completely
+### Limpiar completamente
 ```bash
 podman-compose down -v
 podman image rm isaza-api mysql:8.0
