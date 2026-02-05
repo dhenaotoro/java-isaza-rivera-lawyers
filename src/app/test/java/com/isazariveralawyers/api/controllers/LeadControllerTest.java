@@ -1,0 +1,166 @@
+package com.isazariveralawyers.api.controllers;
+
+import com.isazariveralawyers.api.dtos.LeadCreateRequest;
+import com.isazariveralawyers.api.dtos.LeadCreateResponse;
+import com.isazariveralawyers.api.dtos.Schedule;
+import com.isazariveralawyers.api.models.LeadStatus;
+import com.isazariveralawyers.api.models.RequestType;
+import com.isazariveralawyers.api.services.LeadService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(LeadController.class)
+@DisplayName("Pruebas del Controlador de Leads")
+class LeadControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public LeadService leadService() {
+            return mock(LeadService.class);
+        }
+    }
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private LeadService leadService;
+
+    private LeadCreateRequest leadCreateRequest;
+    private LeadCreateResponse leadCreateResponse;
+
+    @BeforeEach
+    void setUp() {
+        reset(leadService);
+        leadCreateRequest = new LeadCreateRequest();
+        leadCreateRequest.setFirstName("Juan");
+        leadCreateRequest.setLastName("García");
+        leadCreateRequest.setEmail("juan@example.com");
+        leadCreateRequest.setCity("Bogotá");
+        leadCreateRequest.setPhone("3001234567");
+        leadCreateRequest.setSummary("Necesito asesoría en derecho de familia");
+        leadCreateRequest.setRequestType(RequestType.CHILD_SUPPORT);
+        leadCreateRequest.setHasMinors(true);
+        leadCreateRequest.setDataProcessingConsent(true);
+        leadCreateRequest.setWhatsappConsent(true);
+        leadCreateRequest.setSource("instagram");
+
+        Schedule schedule = new Schedule();
+        schedule.setLawyerAUrl("https://calendly.com/lawyer-a/consulting/leadId=1");
+        schedule.setLawyerBUrl("https://calendly.com/lawyer-b/consulting/leadId=1");
+
+        leadCreateResponse = new LeadCreateResponse();
+        leadCreateResponse.setId(1L);
+        leadCreateResponse.setStatus(LeadStatus.NEW);
+        leadCreateResponse.setSchedule(schedule);
+    }
+
+    @Test
+    @DisplayName("Debe crear un lead con POST /api/v1/leads")
+    void testCreateLead_Success() throws Exception {
+        // Arrange
+        when(leadService.create(any(LeadCreateRequest.class))).thenReturn(leadCreateResponse);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(leadCreateRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.status").value("NEW"))
+                .andExpect(jsonPath("$.schedule.lawyerAUrl").exists())
+                .andExpect(jsonPath("$.schedule.lawyerBUrl").exists());
+
+        verify(leadService, times(1)).create(any(LeadCreateRequest.class));
+    }
+
+    @Test
+    @DisplayName("Debe validar que el email sea requerido")
+    void testCreateLead_MissingEmail() throws Exception {
+        // Arrange
+        leadCreateRequest.setEmail(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(leadCreateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(leadService, never()).create(any(LeadCreateRequest.class));
+    }
+
+    @Test
+    @DisplayName("Debe validar que el firstName sea requerido")
+    void testCreateLead_MissingFirstName() throws Exception {
+        // Arrange
+        leadCreateRequest.setFirstName(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(leadCreateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(leadService, never()).create(any(LeadCreateRequest.class));
+    }
+
+    @Test
+    @DisplayName("Debe validar que el email sea un formato válido")
+    void testCreateLead_InvalidEmail() throws Exception {
+        // Arrange
+        leadCreateRequest.setEmail("invalid-email");
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(leadCreateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(leadService, never()).create(any(LeadCreateRequest.class));
+    }
+
+    @Test
+    @DisplayName("Debe confirmar un lead con POST /api/v1/leads/{id}/confirm")
+    void testConfirmLead_Success() throws Exception {
+        // Arrange
+        when(leadService.confirm(1L)).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads/1/confirm"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+
+        verify(leadService, times(1)).confirm(1L);
+    }
+
+    @Test
+    @DisplayName("Debe retornar false si no se puede confirmar el lead")
+    void testConfirmLead_Failure() throws Exception {
+        // Arrange
+        when(leadService.confirm(999L)).thenReturn(false);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/leads/999/confirm"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
+
+        verify(leadService, times(1)).confirm(999L);
+    }
+}

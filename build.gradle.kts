@@ -24,6 +24,14 @@ sourceSets {
             setSrcDirs(listOf("src/app/main/resources"))
         }
     }
+    named("test") {
+        java {
+            setSrcDirs(listOf("src/app/test/java"))
+        }
+        resources {
+            setSrcDirs(listOf("src/app/test/resources"))
+        }
+    }
 }
 
 
@@ -42,6 +50,10 @@ dependencies {
 
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.10.0")
+    testImplementation("org.mockito:mockito-core:5.5.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 }
 
 
