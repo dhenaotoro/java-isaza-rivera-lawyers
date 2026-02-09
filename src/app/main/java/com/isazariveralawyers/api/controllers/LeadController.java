@@ -2,10 +2,12 @@ package com.isazariveralawyers.api.controllers;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
 import com.isazariveralawyers.api.dtos.LeadCreateResponse;
+import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.services.LeadService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 
 @RestController
@@ -20,6 +22,11 @@ public class LeadController {
     @ResponseStatus(HttpStatus.CREATED)
     public LeadCreateResponse create(@Valid @RequestBody LeadCreateRequest req) {
         return service.create(req);
+    }
+
+    @GetMapping
+    public List<Lead> getAll() {
+        return service.getAll();
     }
 
     @PostMapping("/{id}/confirm")

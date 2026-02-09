@@ -3,6 +3,7 @@ package com.isazariveralawyers.api.controllers;
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
 import com.isazariveralawyers.api.dtos.LeadCreateResponse;
 import com.isazariveralawyers.api.dtos.Schedule;
+import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.models.LeadStatus;
 import com.isazariveralawyers.api.models.RequestType;
 import com.isazariveralawyers.api.services.LeadService;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -148,6 +150,30 @@ class LeadControllerTest {
                 .andExpect(jsonPath("$").value(true));
 
         verify(leadService, times(1)).confirm(1L);
+    }
+
+    @Test
+    @DisplayName("Debe listar todos los leads con GET /api/v1/leads")
+    void testGetAllLeads_Success() throws Exception {
+        // Arrange
+        Lead lead = new Lead();
+        lead.setId(1L);
+        lead.setFirstName("Juan");
+        lead.setLastName("Garcia");
+        lead.setEmail("juan@example.com");
+        lead.setCity("Bogota");
+        lead.setStatus(LeadStatus.NEW);
+
+        when(leadService.getAll()).thenReturn(List.of(lead));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/leads"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].email").value("juan@example.com"))
+                .andExpect(jsonPath("$[0].status").value("NEW"));
+
+        verify(leadService, times(1)).getAll();
     }
 
     @Test

@@ -21,7 +21,6 @@ public class Lead {
     private String firstName;
     private String lastName;
 
-    @Column(unique = true)
     private String email;
 
     private String city;

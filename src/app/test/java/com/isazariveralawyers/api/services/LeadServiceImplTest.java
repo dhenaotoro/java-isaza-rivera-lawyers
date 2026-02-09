@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -165,5 +166,21 @@ class LeadServiceImplTest {
         verify(leadRepository, times(1)).save(ArgumentMatchers.argThat(l -> 
             l.getPhoneE164() != null && l.getPhoneE164().startsWith("+57")
         ));
+    }
+
+    @Test
+    @DisplayName("Debe retornar todos los leads")
+    void testGetAllLeads_Success() {
+        // Arrange
+        when(leadRepository.findAll()).thenReturn(List.of(lead));
+
+        // Act
+        var result = leadService.getAll();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(lead.getId(), result.get(0).getId());
+        verify(leadRepository, times(1)).findAll();
     }
 }

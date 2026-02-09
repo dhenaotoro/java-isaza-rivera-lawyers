@@ -9,6 +9,7 @@ import com.isazariveralawyers.api.repositories.LeadRepository;
 import com.isazariveralawyers.api.utils.PhoneUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import java.util.Optional;
 @Service
 public class LeadServiceImpl implements LeadService {
@@ -68,6 +69,12 @@ public class LeadServiceImpl implements LeadService {
             ); */
         }
         return true;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Lead> getAll() {
+        return repo.findAll();
     }
 
     private LeadCreateResponse map(Lead l) {

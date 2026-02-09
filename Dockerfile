@@ -8,6 +8,7 @@ RUN gradle --no-daemon build -x test || gradle build -x test
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+RUN apk add --no-cache curl
 COPY --from=builder /build/build/libs/*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

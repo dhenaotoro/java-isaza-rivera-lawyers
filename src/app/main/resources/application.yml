@@ -19,3 +19,18 @@ app:
   payments:
     provider: "stub" # luego: wompi | epayco | placetopay (sugeridos en CO)
     callbackBaseUrl: "https://tu-dominio.com/webhooks"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
