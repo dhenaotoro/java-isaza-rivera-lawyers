@@ -1,7 +1,7 @@
 package com.isazariveralawyers.api.services;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadCreateResponse;
+import com.isazariveralawyers.api.dtos.LeadIdResponse;
 import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.models.LeadStatus;
 import com.isazariveralawyers.api.models.RequestType;
@@ -76,13 +76,11 @@ class LeadServiceImplTest {
         when(leadRepository.save(any(Lead.class))).thenReturn(lead);
 
         // Act
-        LeadCreateResponse response = leadService.create(leadCreateRequest);
+        LeadIdResponse response = leadService.create(leadCreateRequest);
 
         // Assert
         assertNotNull(response);
         assertEquals(1L, response.getId());
-        assertEquals(LeadStatus.NEW, response.getStatus());
-        assertNotNull(response.getSchedule());
         verify(leadRepository, times(1)).save(any(Lead.class));
     }
 
@@ -95,7 +93,7 @@ class LeadServiceImplTest {
         when(leadRepository.save(any(Lead.class))).thenReturn(lead);
 
         // Act
-        LeadCreateResponse response = leadService.create(leadCreateRequest);
+        LeadIdResponse response = leadService.create(leadCreateRequest);
 
         // Assert
         assertNotNull(response);
@@ -112,10 +110,11 @@ class LeadServiceImplTest {
         when(leadRepository.save(any(Lead.class))).thenReturn(lead);
 
         // Act
-        boolean result = leadService.confirm(1L);
+        String result = leadService.confirm(1L);
 
         // Assert
-        assertTrue(result);
+        assertNotNull(result);
+        assertTrue(result.contains("leadId=1"));
         assertEquals(LeadStatus.CONFIRMED_APPOINTMENT, lead.getStatus());
         verify(leadRepository, times(1)).findById(1L);
         verify(leadRepository, times(1)).save(any(Lead.class));
@@ -128,10 +127,9 @@ class LeadServiceImplTest {
         when(leadRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        boolean result = leadService.confirm(999L);
-
-        // Assert
-        assertFalse(result);
+        var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+            () -> leadService.confirm(999L));
+        assertEquals(org.springframework.http.HttpStatus.NOT_FOUND, ex.getStatusCode());
         verify(leadRepository, times(1)).findById(999L);
         verify(leadRepository, never()).save(any(Lead.class));
     }
@@ -144,10 +142,9 @@ class LeadServiceImplTest {
         when(leadRepository.findById(1L)).thenReturn(Optional.of(lead));
 
         // Act
-        boolean result = leadService.confirm(1L);
-
-        // Assert
-        assertFalse(result);
+        var ex = assertThrows(org.springframework.web.server.ResponseStatusException.class,
+            () -> leadService.confirm(1L));
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, ex.getStatusCode());
         verify(leadRepository, times(1)).findById(1L);
         verify(leadRepository, never()).save(any(Lead.class));
     }
@@ -159,7 +156,7 @@ class LeadServiceImplTest {
         when(leadRepository.save(any(Lead.class))).thenReturn(lead);
 
         // Act
-        LeadCreateResponse response = leadService.create(leadCreateRequest);
+        LeadIdResponse response = leadService.create(leadCreateRequest);
 
         // Assert
         assertNotNull(response);

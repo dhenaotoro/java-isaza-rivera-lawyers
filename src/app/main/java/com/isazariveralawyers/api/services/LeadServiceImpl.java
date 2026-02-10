@@ -1,20 +1,23 @@
 package com.isazariveralawyers.api.services;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadCreateResponse;
-import com.isazariveralawyers.api.dtos.Schedule;
+import com.isazariveralawyers.api.dtos.LeadIdResponse;
 import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.models.LeadStatus;
 import com.isazariveralawyers.api.repositories.LeadRepository;
 import com.isazariveralawyers.api.utils.PhoneUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class LeadServiceImpl implements LeadService {
     private final LeadRepository repo;
     private final WhatsappService whatsappService;
+    private static final String LAWYER_A_CALENDLY = "https://calendly.com/danielfelipehenaotoro/30min";
+    private static final String LAWYER_B_CALENDLY = "https://calendly.com/lawyer-b/consulting";
 
 
     public LeadServiceImpl(LeadRepository repo, WhatsappService whatsappService) {
@@ -23,7 +26,7 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     @Transactional
-    public LeadCreateResponse create(LeadCreateRequest req) {
+    public LeadIdResponse create(LeadCreateRequest req) {
         Lead lead = new Lead();
         lead.setFirstName(req.getFirstName());
         lead.setLastName(req.getLastName());
@@ -46,17 +49,19 @@ public class LeadServiceImpl implements LeadService {
                 "Hola "+lead.getFirstName()+", recibimos tu solicitud. Pronto una asesora te contactará."
             ); */
         }
-        return map(lead);
+        var response = new LeadIdResponse();
+        response.setId(lead.getId());
+        return response;
     }
 
-    public boolean confirm(Long id) {
+    public String confirm(Long id) {
         Optional<Lead> leadOptional = repo.findById(id);
         if (leadOptional.isEmpty()) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lead not found");
         }
         Lead lead = leadOptional.get();
         if (lead.getStatus() != LeadStatus.NEW) {
-            return false; 
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Lead already confirmed");
         }
         lead.setStatus(LeadStatus.CONFIRMED_APPOINTMENT);
         repo.save(lead);
@@ -68,7 +73,7 @@ public class LeadServiceImpl implements LeadService {
                 "Hola "+lead.getFirstName()+", recibimos tu solicitud. Pronto una asesora te contactará."
             ); */
         }
-        return true;
+        return buildCalendlyUrl(lead);
     }
 
     @Override
@@ -77,15 +82,13 @@ public class LeadServiceImpl implements LeadService {
         return repo.findAll();
     }
 
-    private LeadCreateResponse map(Lead l) {
-        var dto = new LeadCreateResponse();
-        dto.setId(l.getId());
-        dto.setStatus(l.getStatus());
+    private String buildCalendlyUrl(Lead lead) {
+        String baseUrl = selectCalendlyBaseUrl(lead);
+        return String.format("%s?leadId=%d", baseUrl, lead.getId());
+    }
 
-        var schedule = new Schedule();
-        schedule.setLawyerAUrl(String.format("https://calendly.com/lawyer-a/consulting/leadId=%d", l.getId()));
-        schedule.setLawyerBUrl(String.format("https://calendly.com/lawyer-b/consulting/leadId=%d", l.getId()));
-        dto.setSchedule(schedule);
-        return dto;
+    private String selectCalendlyBaseUrl(Lead lead) {
+        long id = lead.getId() == null ? 0L : lead.getId();
+        return Math.floorMod(id, 2) == 0 ? LAWYER_A_CALENDLY : LAWYER_B_CALENDLY;
     }
 }

@@ -1,8 +1,7 @@
 package com.isazariveralawyers.api.controllers;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadCreateResponse;
-import com.isazariveralawyers.api.dtos.Schedule;
+import com.isazariveralawyers.api.dtos.LeadIdResponse;
 import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.models.LeadStatus;
 import com.isazariveralawyers.api.models.RequestType;
@@ -46,7 +45,7 @@ class LeadControllerTest {
     private LeadService leadService;
 
     private LeadCreateRequest leadCreateRequest;
-    private LeadCreateResponse leadCreateResponse;
+    private LeadIdResponse leadIdResponse;
 
     @BeforeEach
     void setUp() {
@@ -64,31 +63,22 @@ class LeadControllerTest {
         leadCreateRequest.setWhatsappConsent(true);
         leadCreateRequest.setSource("instagram");
 
-        Schedule schedule = new Schedule();
-        schedule.setLawyerAUrl("https://calendly.com/lawyer-a/consulting/leadId=1");
-        schedule.setLawyerBUrl("https://calendly.com/lawyer-b/consulting/leadId=1");
-
-        leadCreateResponse = new LeadCreateResponse();
-        leadCreateResponse.setId(1L);
-        leadCreateResponse.setStatus(LeadStatus.NEW);
-        leadCreateResponse.setSchedule(schedule);
+        leadIdResponse = new LeadIdResponse();
+        leadIdResponse.setId(1L);
     }
 
     @Test
     @DisplayName("Debe crear un lead con POST /api/v1/leads")
     void testCreateLead_Success() throws Exception {
         // Arrange
-        when(leadService.create(any(LeadCreateRequest.class))).thenReturn(leadCreateResponse);
+        when(leadService.create(any(LeadCreateRequest.class))).thenReturn(leadIdResponse);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/leads")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(leadCreateRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.status").value("NEW"))
-                .andExpect(jsonPath("$.schedule.lawyerAUrl").exists())
-                .andExpect(jsonPath("$.schedule.lawyerBUrl").exists());
+                .andExpect(jsonPath("$.id").value(1L));
 
         verify(leadService, times(1)).create(any(LeadCreateRequest.class));
     }
@@ -142,12 +132,12 @@ class LeadControllerTest {
     @DisplayName("Debe confirmar un lead con POST /api/v1/leads/{id}/confirm")
     void testConfirmLead_Success() throws Exception {
         // Arrange
-        when(leadService.confirm(1L)).thenReturn(true);
+        when(leadService.confirm(1L)).thenReturn("https://calendly.com/danielfelipehenaotoro/30min?leadId=1");
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/leads/1/confirm"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(true));
+                .andExpect(content().string("https://calendly.com/danielfelipehenaotoro/30min?leadId=1"));
 
         verify(leadService, times(1)).confirm(1L);
     }
@@ -177,16 +167,18 @@ class LeadControllerTest {
     }
 
     @Test
-    @DisplayName("Debe retornar false si no se puede confirmar el lead")
-    void testConfirmLead_Failure() throws Exception {
+        @DisplayName("Debe retornar 404 si el lead no existe")
+        void testConfirmLead_NotFound() throws Exception {
         // Arrange
-        when(leadService.confirm(999L)).thenReturn(false);
+        when(leadService.confirm(999L))
+            .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND,
+                "Lead not found"));
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/leads/999/confirm"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(false));
+            .andExpect(status().isNotFound());
 
         verify(leadService, times(1)).confirm(999L);
-    }
+        }
 }

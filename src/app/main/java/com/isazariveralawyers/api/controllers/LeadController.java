@@ -1,7 +1,7 @@
 package com.isazariveralawyers.api.controllers;
 
 import com.isazariveralawyers.api.dtos.LeadCreateRequest;
-import com.isazariveralawyers.api.dtos.LeadCreateResponse;
+import com.isazariveralawyers.api.dtos.LeadIdResponse;
 import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.services.LeadService;
 import jakarta.validation.Valid;
@@ -20,7 +20,7 @@ public class LeadController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public LeadCreateResponse create(@Valid @RequestBody LeadCreateRequest req) {
+    public LeadIdResponse create(@Valid @RequestBody LeadCreateRequest req) {
         return service.create(req);
     }
 
@@ -30,7 +30,7 @@ public class LeadController {
     }
 
     @PostMapping("/{id}/confirm")
-    public boolean confirm(@PathVariable Long id) {
+    public String confirm(@PathVariable Long id) {
         return service.confirm(id);
     }
 }
