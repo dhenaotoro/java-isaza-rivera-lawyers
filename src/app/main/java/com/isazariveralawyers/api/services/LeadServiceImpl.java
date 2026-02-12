@@ -17,7 +17,7 @@ public class LeadServiceImpl implements LeadService {
     private final LeadRepository repo;
     private final WhatsappService whatsappService;
     private static final String LAWYER_A_CALENDLY = "https://calendly.com/danielfelipehenaotoro/30min";
-    private static final String LAWYER_B_CALENDLY = "https://calendly.com/lawyer-b/consulting";
+    private static final String LAWYER_B_CALENDLY = "https://calendly.com/leslierivera-2503/30min";
 
 
     public LeadServiceImpl(LeadRepository repo, WhatsappService whatsappService) {
