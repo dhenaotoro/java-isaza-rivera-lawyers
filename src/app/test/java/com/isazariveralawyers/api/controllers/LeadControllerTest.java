@@ -132,12 +132,12 @@ class LeadControllerTest {
     @DisplayName("Debe confirmar un lead con POST /api/v1/leads/{id}/confirm")
     void testConfirmLead_Success() throws Exception {
         // Arrange
-        when(leadService.confirm(1L)).thenReturn("https://calendly.com/danielfelipehenaotoro/30min?leadId=1");
+        when(leadService.confirm(1L)).thenReturn("Lead confirmed successfully");
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/leads/1/confirm"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("https://calendly.com/danielfelipehenaotoro/30min?leadId=1"));
+            .andExpect(content().string("Lead confirmed successfully"));
 
         verify(leadService, times(1)).confirm(1L);
     }

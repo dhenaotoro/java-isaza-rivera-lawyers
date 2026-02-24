@@ -114,7 +114,7 @@ class LeadServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertTrue(result.contains("leadId=1"));
+        assertEquals("Lead confirmed successfully", result);
         assertEquals(LeadStatus.CONFIRMED_APPOINTMENT, lead.getStatus());
         verify(leadRepository, times(1)).findById(1L);
         verify(leadRepository, times(1)).save(any(Lead.class));

@@ -16,8 +16,7 @@ import java.util.Optional;
 public class LeadServiceImpl implements LeadService {
     private final LeadRepository repo;
     private final WhatsappService whatsappService;
-    private static final String LAWYER_A_CALENDLY = "https://calendly.com/danielfelipehenaotoro/30min";
-    private static final String LAWYER_B_CALENDLY = "https://calendly.com/leslierivera-2503/30min";
+    private static final String CONFIRMATION_MESSAGE = "Lead confirmed successfully";
 
 
     public LeadServiceImpl(LeadRepository repo, WhatsappService whatsappService) {
@@ -73,22 +72,12 @@ public class LeadServiceImpl implements LeadService {
                 "Hola "+lead.getFirstName()+", recibimos tu solicitud. Pronto una asesora te contactará."
             ); */
         }
-        return buildCalendlyUrl(lead);
+        return CONFIRMATION_MESSAGE;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Lead> getAll() {
         return repo.findAll();
-    }
-
-    private String buildCalendlyUrl(Lead lead) {
-        String baseUrl = selectCalendlyBaseUrl(lead);
-        return String.format("%s?leadId=%d", baseUrl, lead.getId());
-    }
-
-    private String selectCalendlyBaseUrl(Lead lead) {
-        long id = lead.getId() == null ? 0L : lead.getId();
-        return Math.floorMod(id, 2) == 0 ? LAWYER_A_CALENDLY : LAWYER_B_CALENDLY;
     }
 }

@@ -3,7 +3,50 @@
 ## Resumen de endpoints
 
 - `POST /api/v1/leads` → crea un lead.
-- `POST /api/v1/leads/{id}/confirm` → confirma cita/estado del lead.
+- `POST /api/v1/leads/{id}/confirm` → confirma el lead (cambia estado a `CONFIRMED_APPOINTMENT`).
+
+## Reporte automático diario de leads
+
+La app ejecuta un job programado todos los días a las **6:00 PM** (zona `America/Bogota`) y exporta la tabla de leads a CSV con estas columnas:
+
+- `name`
+- `city`
+- `request_type`
+- `description`
+- `email`
+- `cellphone`
+
+Destino del reporte:
+
+- WhatsApp: `+573108216768`
+- Email: `leslierivera.2503@gmail.com`
+
+Configuración en `application.yml` / `application-docker.yml`:
+
+```yaml
+app:
+	reports:
+		leads:
+			cron: "0 0 18 * * *"
+			zone: "America/Bogota"
+			whatsapp-recipient: "+573108216768"
+			email-recipient: "leslierivera.2503@gmail.com"
+			email-subject: "Reporte diario de leads"
+			email-from: "no-reply@isazariveralawyers.com"
+```
+
+Para envío por correo, configura SMTP por variables de entorno:
+
+```bash
+SPRING_MAIL_HOST=
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=
+SPRING_MAIL_PASSWORD=
+SPRING_MAIL_SMTP_AUTH=true
+SPRING_MAIL_STARTTLS_ENABLE=true
+```
+
+Nota: el envío a WhatsApp está implementado con un servicio `stub`; para producción debes conectar `WhatsappService` con WhatsApp Business Cloud API para enviar el archivo real.
 
 ---
 
@@ -93,6 +136,12 @@ Para confirmar un lead (ejemplo id 1):
 
 ```bash
 curl -X POST http://localhost:8081/api/v1/leads/1/confirm
+```
+
+Respuesta esperada:
+
+```text
+Lead confirmed successfully
 ```
 
 ---

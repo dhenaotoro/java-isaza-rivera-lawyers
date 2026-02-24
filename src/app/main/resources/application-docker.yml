@@ -4,6 +4,14 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SPRING_MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SPRING_MAIL_STARTTLS_ENABLE:true}
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
@@ -15,6 +23,14 @@ app:
   whatsapp:
     senderNumber: "+57xxxxxxxxxx"
     token: "WHATSAPP_BEARER_TOKEN"
+  reports:
+    leads:
+      cron: "0 0 18 * * *"
+      zone: "America/Bogota"
+      whatsapp-recipient: "+573108216768"
+      email-recipient: "leslierivera.2503@gmail.com"
+      email-subject: "Reporte diario de leads"
+      email-from: "no-reply@isazariveralawyers.com"
   payments:
     provider: "stub"
     callbackBaseUrl: "https://tu-dominio.com/webhooks"

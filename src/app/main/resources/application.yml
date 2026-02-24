@@ -3,6 +3,14 @@ spring:
     url: jdbc:h2:mem:legaldb;DB_CLOSE_DELAY=-1;MODE=MySQL
     username: sa
     password: sa
+  mail:
+    host: ${SPRING_MAIL_HOST:}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SPRING_MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SPRING_MAIL_STARTTLS_ENABLE:true}
 jpa:
   hibernate:
     ddl-auto: update
@@ -16,10 +24,17 @@ app:
   whatsapp:
     senderNumber: "+57xxxxxxxxxx" # número de WhatsApp Business
     token: "WHATSAPP_BEARER_TOKEN"
+  reports:
+    leads:
+      cron: "0 0 18 * * *"
+      zone: "America/Bogota"
+      whatsapp-recipient: "+573108216768"
+      email-recipient: "leslierivera.2503@gmail.com"
+      email-subject: "Reporte diario de leads"
+      email-from: "no-reply@isazariveralawyers.com"
   payments:
     provider: "stub" # luego: wompi | epayco | placetopay (sugeridos en CO)
     callbackBaseUrl: "https://tu-dominio.com/webhooks"
-
 management:
   endpoints:
     web:
