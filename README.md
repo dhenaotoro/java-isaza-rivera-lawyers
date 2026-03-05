@@ -54,34 +54,69 @@ Nota: el envío a WhatsApp está implementado con un servicio `stub`; para produ
 
 Prerequisitos: `podman`, `podman-compose` y que la `podman machine` esté iniciada.
 
-1. Iniciar la máquina de Podman (si no está creada):
+1. Crear archivo `.env` en la raíz del proyecto (Podman Compose lo carga automáticamente):
+
+```bash
+cat > .env <<'EOF'
+# Scheduler (ajústalo a 0 0 18 * * * para diario 6:00 PM)
+APP_REPORTS_LEADS_CRON=0 * * * * *
+
+# SMTP (Gmail ejemplo)
+SPRING_MAIL_HOST=smtp.gmail.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=tu_correo@gmail.com
+SPRING_MAIL_PASSWORD=tu_app_password_16_chars
+SPRING_MAIL_SMTP_AUTH=true
+SPRING_MAIL_STARTTLS_ENABLE=true
+EOF
+```
+
+Variables necesarias para envío por email:
+
+- `SPRING_MAIL_HOST`
+- `SPRING_MAIL_PORT`
+- `SPRING_MAIL_USERNAME`
+- `SPRING_MAIL_PASSWORD`
+- `SPRING_MAIL_SMTP_AUTH`
+- `SPRING_MAIL_STARTTLS_ENABLE`
+
+Variable opcional para frecuencia del job:
+
+- `APP_REPORTS_LEADS_CRON` (por ejemplo `0 * * * * *` cada minuto)
+
+2. Iniciar la máquina de Podman (si no está creada):
 
 ```bash
 podman machine init
 podman machine start
 ```
 
-2. Desde la raíz del proyecto construir y levantar los servicios:
+3. Desde la raíz del proyecto construir y levantar los servicios:
 
 ```bash
 podman-compose build --no-cache api
 podman-compose up -d
 ```
 
-3. Ver logs:
+4. Ver logs:
 
 ```bash
 podman-compose logs -f api
 podman-compose logs -f mysql
 ```
 
-4. Parar y eliminar:
+5. Parar y eliminar:
 
 ```bash
 podman-compose down -v
 ```
 
 La API escucha en `http://localhost:8081` (puerto mapeado por `podman-compose.yml`).
+
+Notas:
+
+- Si editas `.env`, recrea API para aplicar cambios: `podman-compose up -d --force-recreate api`.
+- No subas `.env` al repositorio (está ignorado por `.gitignore`).
 
 ---
 

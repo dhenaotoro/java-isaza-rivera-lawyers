@@ -25,7 +25,7 @@ app:
     token: "WHATSAPP_BEARER_TOKEN"
   reports:
     leads:
-      cron: "0 0 18 * * *"
+      cron: ${APP_REPORTS_LEADS_CRON:0 0 18 * * *}
       zone: "America/Bogota"
       whatsapp-recipient: "+573108216768"
       email-recipient: "leslierivera.2503@gmail.com"
