@@ -132,6 +132,61 @@ Nota: la profile `docker` carga `src/app/main/resources/application-docker.yml` 
 
 ---
 
+## Despliegue en AWS con CDK (JavaScript)
+
+El proyecto CDK ubicado en `infra/` sirve para desplegar:
+
+- API en **ECS Fargate**
+- **Application Load Balancer** público
+- Base de datos **RDS MySQL** privada
+
+### Requisitos
+
+- Node.js 18+
+- AWS CLI configurado (`aws configure`)
+- credenciales con permisos para ECS, ALB, VPC, RDS, IAM, CloudFormation, ECR
+
+### Instalar CDK y dependencias
+
+```bash
+cd infra
+npm install
+```
+
+### Bootstrap de la cuenta/región (una sola vez)
+
+```bash
+npx cdk bootstrap aws://<AWS_ACCOUNT_ID>/<AWS_REGION>
+```
+
+### Sintetizar y desplegar
+
+```bash
+npm run synth
+npm run deploy -- \
+	--parameters SpringMailHost=smtp.gmail.com \
+	--parameters SpringMailPort=587 \
+	--parameters SpringMailUsername=tu_correo@gmail.com \
+	--parameters SpringMailPassword=tu_app_password \
+	--parameters AppReportsLeadsCron='0 0 18 * * *'
+```
+
+El stack publica outputs con:
+
+- URL del Load Balancer
+- Endpoint de la base de datos
+- ARN del secret de RDS
+
+### Limpiar recursos
+
+```bash
+npm run destroy
+```
+
+> Nota: el stack CDK construye la imagen Docker usando el `Dockerfile` de la raíz del proyecto. `podman-compose` sigue siendo para entorno local.
+
+---
+
 ## Probar con Postman / curl
 
 Endpoint para crear un lead:
