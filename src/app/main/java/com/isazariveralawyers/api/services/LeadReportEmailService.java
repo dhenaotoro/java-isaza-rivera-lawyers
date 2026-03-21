@@ -3,8 +3,6 @@ package com.isazariveralawyers.api.services;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -14,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LeadReportEmailService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LeadReportEmailService.class);
-
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
 
     @Value("${app.reports.leads.email-from:no-reply@isazariveralawyers.com}")
@@ -35,7 +31,6 @@ public class LeadReportEmailService {
 
         JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
         if (mailSender == null) {
-            LOGGER.warn("JavaMailSender is not configured. Skipping lead report email to {}", safeRecipient);
             return;
         }
 

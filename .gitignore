@@ -5,3 +5,4 @@ build/
 !.env.example
 infra/node_modules/
 infra/cdk.out/
+.DS_Store

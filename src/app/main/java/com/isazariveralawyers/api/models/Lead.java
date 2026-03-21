@@ -25,6 +25,7 @@ public class Lead {
 
     private String city;
 
+    @Column(name = "phone_e164")
     private String phoneE164;
 
     private String summary;

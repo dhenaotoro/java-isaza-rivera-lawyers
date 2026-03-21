@@ -4,6 +4,7 @@ const ec2 = require('aws-cdk-lib/aws-ec2');
 const ecs = require('aws-cdk-lib/aws-ecs');
 const ecsPatterns = require('aws-cdk-lib/aws-ecs-patterns');
 const rds = require('aws-cdk-lib/aws-rds');
+const secretsmanager = require('aws-cdk-lib/aws-secretsmanager');
 
 class LegacyAdviceApiStack extends cdk.Stack {
   constructor(scope, id, props) {
@@ -38,12 +39,11 @@ class LegacyAdviceApiStack extends cdk.Stack {
       description: 'SMTP username / sender email'
     });
 
-    const springMailPassword = new cdk.CfnParameter(this, 'SpringMailPassword', {
-      type: 'String',
-      noEcho: true,
-      default: '',
-      description: 'SMTP password or app password'
-    });
+    const smtpPasswordSecret = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      'SmtpPasswordSecret',
+      'legacy-advice-api/smtp-password'
+    );
 
     const vpc = new ec2.Vpc(this, 'ApiVpc', {
       maxAzs: 2,
@@ -59,7 +59,7 @@ class LegacyAdviceApiStack extends cdk.Stack {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       engine: rds.DatabaseInstanceEngine.mysql({
-        version: rds.MysqlEngineVersion.VER_8_0_39
+        version: rds.MysqlEngineVersion.VER_8_0_45
       }),
       credentials: rds.Credentials.fromGeneratedSecret('legal_user'),
       databaseName: dbName.valueAsString,
@@ -70,13 +70,17 @@ class LegacyAdviceApiStack extends cdk.Stack {
       publiclyAccessible: false,
       deletionProtection: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
-      backupRetention: cdk.Duration.days(7)
+      backupRetention: cdk.Duration.days(0)
     });
 
     const fargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(this, 'ApiService', {
       cluster,
       publicLoadBalancer: true,
       desiredCount: 1,
+      // Single-task services can flap during rolling updates unless grace/percentages are explicit.
+      healthCheckGracePeriod: cdk.Duration.minutes(5),
+      minHealthyPercent: 0,
+      maxHealthyPercent: 200,
       cpu: 512,
       memoryLimitMiB: 1024,
       taskImageOptions: {
@@ -99,11 +103,11 @@ class LegacyAdviceApiStack extends cdk.Stack {
           APP_REPORTS_LEADS_CRON: appReportsLeadsCron.valueAsString,
           SPRING_MAIL_HOST: springMailHost.valueAsString,
           SPRING_MAIL_PORT: springMailPort.valueAsString,
-          SPRING_MAIL_USERNAME: springMailUsername.valueAsString,
-          SPRING_MAIL_PASSWORD: springMailPassword.valueAsString
+          SPRING_MAIL_USERNAME: springMailUsername.valueAsString
         },
         secrets: {
-          SPRING_DATASOURCE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret, 'password')
+          SPRING_DATASOURCE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret, 'password'),
+          SPRING_MAIL_PASSWORD: ecs.Secret.fromSecretsManager(smtpPasswordSecret)
         },
         logDriver: ecs.LogDrivers.awsLogs({
           streamPrefix: 'legacy-advice-api'
@@ -128,6 +132,10 @@ class LegacyAdviceApiStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'DatabaseSecretArn', {
       value: database.secret.secretArn
+    });
+
+    new cdk.CfnOutput(this, 'SmtpPasswordSecretArn', {
+      value: smtpPasswordSecret.secretArn
     });
   }
 }
