@@ -2,7 +2,6 @@ package com.isazariveralawyers.api.dtos;
 
 import com.isazariveralawyers.api.models.RequestType;
 import jakarta.validation.constraints.*;
-import java.time.LocalDate;
 import lombok.Data;
 
 @Data

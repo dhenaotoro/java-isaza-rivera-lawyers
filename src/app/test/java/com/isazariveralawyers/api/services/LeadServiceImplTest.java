@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Pruebas del Servicio de Leads")
 class LeadServiceImplTest {
@@ -82,6 +83,10 @@ class LeadServiceImplTest {
         assertNotNull(response);
         assertEquals(1L, response.getId());
         verify(leadRepository, times(1)).save(any(Lead.class));
+        verify(whatsappService, times(1)).sendConfirmationMessage(
+            eq("+573001234567"),
+            contains("Juan")
+        );
     }
 
     @Test
@@ -118,6 +123,10 @@ class LeadServiceImplTest {
         assertEquals(LeadStatus.CONFIRMED_APPOINTMENT, lead.getStatus());
         verify(leadRepository, times(1)).findById(1L);
         verify(leadRepository, times(1)).save(any(Lead.class));
+        verify(whatsappService, times(1)).sendConfirmationMessage(
+            eq("+573001234567"),
+            contains("Juan")
+        );
     }
 
     @Test

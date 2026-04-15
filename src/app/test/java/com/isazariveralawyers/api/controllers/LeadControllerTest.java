@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@SuppressWarnings("null")
 @WebMvcTest(LeadController.class)
 @DisplayName("Pruebas del Controlador de Leads")
 class LeadControllerTest {

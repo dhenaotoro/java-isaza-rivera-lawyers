@@ -55,7 +55,8 @@ class LegacyAdviceApiStack extends cdk.Stack {
       containerInsightsV2: ecs.ContainerInsights.ENABLED
     });
 
-    const database = new rds.DatabaseInstance(this, 'ApiMySql', {
+    // New logical ID forces recreation when the previous DB resource drifted/deleted out-of-band.
+    const database = new rds.DatabaseInstance(this, 'ApiMySqlRecreated', {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       engine: rds.DatabaseInstanceEngine.mysql({

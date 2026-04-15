@@ -1,6 +1,5 @@
 package com.isazariveralawyers.api.services;
 
-import com.isazariveralawyers.api.services.WhatsappService;
 import org.springframework.stereotype.Service;
 
 @Service
