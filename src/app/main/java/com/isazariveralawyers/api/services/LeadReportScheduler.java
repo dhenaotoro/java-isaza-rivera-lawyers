@@ -3,22 +3,35 @@ package com.isazariveralawyers.api.services;
 import com.isazariveralawyers.api.config.ReportProperties;
 import com.isazariveralawyers.api.models.Lead;
 import com.isazariveralawyers.api.repositories.LeadRepository;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class LeadReportScheduler {
+    private static final Logger log = LoggerFactory.getLogger(LeadReportScheduler.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
     private final LeadRepository leadRepository;
     private final WhatsappService whatsappService;
     private final LeadReportEmailService leadReportEmailService;
     private final ReportProperties reportProperties;
+
+    @Value("${app.reports.leads.cron:0 0 18 * * *}")
+    private String cronExpression = "0 0 18 * * *";
+
+    @Value("${app.reports.leads.zone:America/Bogota}")
+    private String scheduleZone = "America/Bogota";
 
     public LeadReportScheduler(
         LeadRepository leadRepository,
@@ -32,29 +45,61 @@ public class LeadReportScheduler {
         this.reportProperties = reportProperties;
     }
 
+    @PostConstruct
+    void logSchedulerConfiguration() {
+        log.info(
+            "Lead report scheduler configured. cron='{}', zone='{}', emailRecipient='{}', whatsappRecipient='{}'",
+            cronExpression,
+            scheduleZone,
+            reportProperties.getEmailRecipient(),
+            reportProperties.getWhatsappRecipient()
+        );
+    }
+
     @Transactional(readOnly = true)
     @Scheduled(cron = "${app.reports.leads.cron:0 0 18 * * *}", zone = "${app.reports.leads.zone:America/Bogota}")
     public void exportAndSendLeadsReport() {
-        List<Lead> leads = leadRepository.findAll();
-        String csv = toCsv(leads);
-        byte[] csvBytes = csv.getBytes(StandardCharsets.UTF_8);
-        String date = LocalDate.now().format(DATE_FORMATTER);
-        String fileName = "leads-" + date + ".csv";
+        ZonedDateTime startedAt = ZonedDateTime.now(ZoneId.of(scheduleZone));
+        try {
+            List<Lead> leads = leadRepository.findAll();
+            log.info("Lead report job started at {} with {} lead(s).", startedAt, leads.size());
 
-        whatsappService.sendDocumentMessage(
-            reportProperties.getWhatsappRecipient(),
-            fileName,
-            csvBytes,
-            "Reporte diario de leads"
-        );
+            String csv = toCsv(leads);
+            byte[] csvBytes = csv.getBytes(StandardCharsets.UTF_8);
+            String date = LocalDate.now(ZoneId.of(scheduleZone)).format(DATE_FORMATTER);
+            String fileName = "leads-" + date + ".csv";
 
-        leadReportEmailService.sendCsvReport(
-            reportProperties.getEmailRecipient(),
-            reportProperties.getEmailSubject(),
-            "Adjunto encontrarás el reporte diario de leads en formato CSV.",
-            fileName,
-            csvBytes
-        );
+            whatsappService.sendDocumentMessage(
+                reportProperties.getWhatsappRecipient(),
+                fileName,
+                csvBytes,
+                "Reporte diario de leads"
+            );
+
+            leadReportEmailService.sendCsvReport(
+                reportProperties.getEmailRecipient(),
+                reportProperties.getEmailSubject(),
+                "Adjunto encontrarás el reporte diario de leads en formato CSV.",
+                fileName,
+                csvBytes
+            );
+
+            log.info(
+                "Lead report job completed successfully. fileName='{}', leadCount={}, startedAt='{}'",
+                fileName,
+                leads.size(),
+                startedAt
+            );
+        } catch (Exception ex) {
+            log.error(
+                "Lead report job failed. cron='{}', zone='{}', startedAt='{}'",
+                cronExpression,
+                scheduleZone,
+                startedAt,
+                ex
+            );
+            throw ex;
+        }
     }
 
     String toCsv(List<Lead> leads) {

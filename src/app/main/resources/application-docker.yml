@@ -12,6 +12,8 @@ spring:
     properties:
       mail.smtp.auth: ${SPRING_MAIL_SMTP_AUTH:true}
       mail.smtp.starttls.enable: ${SPRING_MAIL_STARTTLS_ENABLE:true}
+  flyway:
+    connect-retries: 60
   jpa:
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
