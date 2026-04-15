@@ -58,8 +58,8 @@ Prerequisitos: `podman`, `podman-compose` y que la `podman machine` esté inicia
 
 ```bash
 cat > .env <<'EOF'
-# Scheduler (ajústalo a 0 0 18 * * * para diario 6:00 PM)
-APP_REPORTS_LEADS_CRON=0 * * * * *
+# Scheduler diario a las 6:00 PM hora America/Bogota
+APP_REPORTS_LEADS_CRON=0 0 18 * * *
 
 # SMTP (Gmail ejemplo)
 SPRING_MAIL_HOST=smtp.gmail.com
@@ -82,7 +82,7 @@ Variables necesarias para envío por email:
 
 Variable opcional para frecuencia del job:
 
-- `APP_REPORTS_LEADS_CRON` (por ejemplo `0 * * * * *` cada minuto)
+- `APP_REPORTS_LEADS_CRON` (valor recomendado: `0 0 18 * * *`; solo para pruebas temporales usa algo como `0 * * * * *`)
 
 2. Iniciar la máquina de Podman (si no está creada):
 
