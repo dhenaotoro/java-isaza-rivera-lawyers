@@ -47,6 +47,15 @@ public class LeadReportScheduler {
 
     @PostConstruct
     void logSchedulerConfiguration() {
+        String systemDefaultZone = ZoneId.systemDefault().getId();
+        String systemTime = ZonedDateTime.now().toString();
+        String bogotaTime = ZonedDateTime.now(ZoneId.of(scheduleZone)).toString();
+        log.warn("========== SCHEDULER TIMEZONE DEBUG ==========");
+        log.warn("System default timezone: {}", systemDefaultZone);
+        log.warn("Current system time: {}", systemTime);
+        log.warn("Current Bogota time: {}", bogotaTime);
+        log.warn("Scheduler timezone: {}", scheduleZone);
+        log.warn("=============================================");
         log.info(
             "Lead report scheduler configured. cron='{}', zone='{}', emailRecipient='{}', whatsappRecipient='{}'",
             cronExpression,
@@ -60,6 +69,11 @@ public class LeadReportScheduler {
     @Scheduled(cron = "${app.reports.leads.cron:0 0 18 * * *}", zone = "${app.reports.leads.zone:America/Bogota}")
     public void exportAndSendLeadsReport() {
         ZonedDateTime startedAt = ZonedDateTime.now(ZoneId.of(scheduleZone));
+        ZonedDateTime systemTime = ZonedDateTime.now();
+        log.warn("========== SCHEDULER JOB TRIGGERED ==========");
+        log.warn("System time (UTC): {}", systemTime);
+        log.warn("Bogota time: {}", startedAt);
+        log.warn("=============================================");
         try {
             List<Lead> leads = leadRepository.findAll();
             log.info("Lead report job started at {} with {} lead(s).", startedAt, leads.size());

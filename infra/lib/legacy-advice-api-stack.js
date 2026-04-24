@@ -92,7 +92,11 @@ class LegacyAdviceApiStack extends cdk.Stack {
             'infra/node_modules/**',
             '.git/**',
             '.gradle/**',
-            'build/**'
+            'build/reports/**',
+            'build/test-results/**',
+            'build/tmp/**',
+            'build/generated/**',
+            'build/classes/**'
           ]
         }),
         containerPort: 8081,
@@ -104,7 +108,8 @@ class LegacyAdviceApiStack extends cdk.Stack {
           APP_REPORTS_LEADS_CRON: appReportsLeadsCron.valueAsString,
           SPRING_MAIL_HOST: springMailHost.valueAsString,
           SPRING_MAIL_PORT: springMailPort.valueAsString,
-          SPRING_MAIL_USERNAME: springMailUsername.valueAsString
+          SPRING_MAIL_USERNAME: springMailUsername.valueAsString,
+          TZ: 'America/Bogota'
         },
         secrets: {
           SPRING_DATASOURCE_PASSWORD: ecs.Secret.fromSecretsManager(database.secret, 'password'),

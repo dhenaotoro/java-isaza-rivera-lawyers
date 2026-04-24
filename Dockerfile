@@ -1,14 +1,10 @@
-# Build stage using official Gradle image (no gradlew required)
-FROM eclipse-temurin:21-jdk-alpine AS builder
-WORKDIR /build
-RUN apk add --no-cache unzip curl bash ca-certificates gradle
-COPY . .
-RUN gradle --no-daemon build -x test || gradle build -x test
-
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-RUN apk add --no-cache curl
-COPY --from=builder /build/build/libs/*.jar app.jar
+RUN apk add --no-cache curl tzdata
+COPY build/libs/*.jar /tmp/libs/
+RUN cp "$(ls /tmp/libs/*.jar | grep -v -- '-plain.jar' | head -n 1)" /app/app.jar && rm -rf /tmp/libs
 EXPOSE 8081
+# Set timezone to America/Bogota for scheduler
+ENV TZ=America/Bogota
 ENTRYPOINT ["java", "-jar", "app.jar"]
