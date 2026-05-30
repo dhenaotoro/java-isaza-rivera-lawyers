@@ -5,6 +5,26 @@
 - `POST /api/v1/leads` → crea un lead.
 - `POST /api/v1/leads/{id}/confirm` → confirma el lead (cambia estado a `CONFIRMED_APPOINTMENT`).
 
+## Mapa de endpoints (Mermaid)
+
+```mermaid
+flowchart TD
+	A[Legacy Advice API] --> B[/api/v1/leads]
+	A --> C[/api/v1/reports]
+	A --> D[/actuator]
+
+	B --> B1["POST /api/v1/leads<br/>Create lead"]
+	B --> B2["GET /api/v1/leads<br/>List all leads"]
+	B --> B3["POST /api/v1/leads/{id}/confirm<br/>Confirm appointment"]
+
+	C --> C1["POST /api/v1/reports/leads/trigger<br/>Trigger lead report export/send"]
+
+	D --> D1["GET /actuator/health<br/>Overall health"]
+	D --> D2["GET /actuator/health/readiness<br/>Readiness probe"]
+	D --> D3["GET /actuator/health/liveness<br/>Liveness probe"]
+	D --> D4["GET /actuator/info<br/>App info"]
+```
+
 ## Reporte automático diario de leads
 
 La app ejecuta un job programado todos los días a las **6:00 PM** (zona `America/Bogota`) y exporta la tabla de leads a CSV con estas columnas:
