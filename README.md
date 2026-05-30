@@ -8,21 +8,62 @@
 ## Mapa de endpoints (Mermaid)
 
 ```mermaid
-flowchart TD
-	A[Legacy Advice API] --> B[/api/v1/leads]
-	A --> C[/api/v1/reports]
-	A --> D[/actuator]
+sequenceDiagram
+	autonumber
+	actor Client
+	participant API as Legacy Advice API
+	participant Leads as /api/v1/leads
+	participant Reports as /api/v1/reports
+	participant Actuator as /actuator
 
-	B --> B1["POST /api/v1/leads<br/>Create lead"]
-	B --> B2["GET /api/v1/leads<br/>List all leads"]
-	B --> B3["POST /api/v1/leads/{id}/confirm<br/>Confirm appointment"]
+	rect rgb(239, 248, 255)
+		Note over Client,Leads: Lead endpoints
+		Client->>API: POST /api/v1/leads
+		API->>Leads: Create lead
+		Leads-->>API: Lead created
+		API-->>Client: 201 Created
 
-	C --> C1["POST /api/v1/reports/leads/trigger<br/>Trigger lead report export/send"]
+		Client->>API: GET /api/v1/leads
+		API->>Leads: List all leads
+		Leads-->>API: Leads list
+		API-->>Client: 200 OK
 
-	D --> D1["GET /actuator/health<br/>Overall health"]
-	D --> D2["GET /actuator/health/readiness<br/>Readiness probe"]
-	D --> D3["GET /actuator/health/liveness<br/>Liveness probe"]
-	D --> D4["GET /actuator/info<br/>App info"]
+		Client->>API: POST /api/v1/leads/{id}/confirm
+		API->>Leads: Confirm appointment
+		Leads-->>API: Lead confirmed
+		API-->>Client: 200 OK
+	end
+
+	rect rgb(245, 250, 238)
+		Note over Client,Reports: Report endpoint
+		Client->>API: POST /api/v1/reports/leads/trigger
+		API->>Reports: Trigger export/send
+		Reports-->>API: Report queued/sent
+		API-->>Client: 200 OK
+	end
+
+	rect rgb(252, 245, 236)
+		Note over Client,Actuator: Actuator endpoints
+		Client->>API: GET /actuator/health
+		API->>Actuator: Overall health
+		Actuator-->>API: UP/DOWN
+		API-->>Client: 200 OK
+
+		Client->>API: GET /actuator/health/readiness
+		API->>Actuator: Readiness probe
+		Actuator-->>API: READY/NOT_READY
+		API-->>Client: 200 OK
+
+		Client->>API: GET /actuator/health/liveness
+		API->>Actuator: Liveness probe
+		Actuator-->>API: ALIVE/NOT_ALIVE
+		API-->>Client: 200 OK
+
+		Client->>API: GET /actuator/info
+		API->>Actuator: App info
+		Actuator-->>API: Build metadata
+		API-->>Client: 200 OK
+	end
 ```
 
 ## Reporte automático diario de leads
